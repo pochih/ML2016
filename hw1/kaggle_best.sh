@@ -1,0 +1,1 @@
+python2 input_small_linear_regression.py
