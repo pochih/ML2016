@@ -1,1 +1,1 @@
-python2 small_linear_regression.py
+python2.7 input_small_linear_regression.py theta_20W linear_regression.csv theta_linear_regression

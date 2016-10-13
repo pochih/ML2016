@@ -1,0 +1,1 @@
+python2.7 small_linear_regression.py

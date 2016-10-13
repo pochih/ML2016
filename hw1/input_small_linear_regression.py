@@ -1,11 +1,12 @@
 # coding=utf-8
 import numpy as np
+import sys
 
 rawTrainData = open('train.csv', 'r').read().split('\r\n')
 rawTestData = open('test_X.csv', 'r').read().split('\n')
-output = open('kaggle_best.csv', 'w')
-thetaOut = open('theta_kaggle_best.csv', 'w')
-thetaData = open('theta_small_linux9_2', 'r').read().split(',')
+output = open(sys.argv[2], 'w')
+thetaOut = open(sys.argv[3], 'w')
+thetaData = open(sys.argv[1], 'r').read().split(',')
 thetaData = thetaData[:-1]
 
 # 存 features
@@ -21,7 +22,7 @@ testData = []
 alpha = 0.000000005 	    # learning rate
 ep = 0.0001 	            # convergence criteria
 lamda = 3.01 	            # regularization rate
-MAX_ITERATION = 150000
+MAX_ITERATION = 15
 
 def countCost(contTrainData, theta, lamda):
 	# total error, C(theta) = 1/2*sum((theta dot X - Y)^2) + lamda*sum(W^2)
