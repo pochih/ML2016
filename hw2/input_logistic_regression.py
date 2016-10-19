@@ -1,13 +1,13 @@
 # coding=utf-8
 
-from numpy import zeros, ones, e, log, random
+from numpy import zeros, ones, e, log, random, mean, std, clip
 import sys
 import time
 
 ORDER = 2                   # order
 LAMBDA = 10 				# regularization rate
 SCALING = False             # feature scaling
-ALPHA = 0.00000002				# learning rate
+ALPHA = 0.00000002			# learning rate
 MAX_ITERATION = 900000 	    # max iterations
 TIME_MAX = float("inf")     # time max (10 mins)
 output = open('submit_100W_o2', 'w')
