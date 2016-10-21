@@ -4,15 +4,15 @@ from numpy import zeros, ones, e, log, random, mean, std, clip
 import sys
 import time
 
-ORDER = 2                   # order
-LAMBDA = 10 				# regularization rate
+ORDER = 1                   # order
+LAMBDA = 11 				# regularization rate
 SCALING = False             # feature scaling
-ALPHA = 0.00000002			# learning rate
-MAX_ITERATION = 900000 	    # max iterations
+ALPHA = 0.00002			    # learning rate
+MAX_ITERATION = 1000000 	# max iterations
 TIME_MAX = float("inf")     # time max (10 mins)
-output = open('submit_100W_o2', 'w')
-thetaOut = open('theta_100W_o2', 'w')
-thetaData = open('theta_10W_o2', 'r').read().split(',')
+output = open('submit_50min', 'w')
+thetaOut = open('theta_50min', 'w')
+thetaData = open('theta_40min', 'r').read().split(',')
 thetaData = thetaData[:-1]
 for i in range(len(thetaData)):
     thetaData[i] = float(thetaData[i])
@@ -90,7 +90,7 @@ def logistic_regression(X, y):
             print "reach max_iter"
             break
 
-        if iter % 1000 == 0:
+        if iter % 5 == 0:
             error = countError(theta, X, y)
             print("Iteration %d | Error: %f | alpha: %.10f" % (iter, error, alpha))
             print("Time: %f" % (tend - tstart))
@@ -123,7 +123,7 @@ def mapTrainOrder(trainData, ORDER):
 def mapTestOrder(testData, ORDER):
     # 生成 test data
     per_order_size = len(testData[0]) - 1
-    X_t = ones(shape=(len(testData), per_order_size * 2 + 1))    
+    X_t = ones(shape=(len(testData), per_order_size * ORDER + 1))    
 
     for i in range(len(testData)):
         for j in range(ORDER):

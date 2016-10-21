@@ -1,17 +1,17 @@
 # coding=utf-8
 
-from numpy import zeros, ones, e, log, random, mean, std, clip
+from numpy import zeros, ones, e, log, random, mean, std, clip, array
 import sys
 import time
 
-ORDER = 2                   # order
-LAMBDA = 10 				# regularization rate
+ORDER = 1                   # order
+LAMBDA = 11 				# regularization rate
 SCALING = False             # feature scaling
 ALPHA = 0.001				# learning rate
-MAX_ITERATION = 10000000	    # max iterations
+MAX_ITERATION = 1000000	    # max iterations
 TIME_MAX = float("inf") 	# time max (10 mins)
-thetaOut = open('theta_1000W_o2_linux1', 'w')
-output = open('submit_1000W_o2_linux1', 'w')
+thetaOut = open('theta_100W_o1_scaling', 'w')
+output = open('submit_100W_o1_scaling', 'w')
 
 def sigmoid(X):
 
@@ -71,20 +71,12 @@ def logistic_regression(X, y):
     tstart = time.time()
     tend = time.time()
     while abs(tend - tstart) < TIME_MAX:
-        oldError = error
 
         # count error, gradient
         grad = countGradient(theta, X, y)
 
-        # update theta
-        theta = theta - alpha * grad
-
-        iter += 1
-        if iter >= MAX_ITERATION:
-            print "reach max_iter"
-            break
-
-        if iter % 1000 == 0:
+        if iter % 10 == 0:
+            oldError = error
             error = countError(theta, X, y)
             print("Iteration %d | Error: %f | alpha: %.10f" % (iter, error, alpha))
             print("Time: %f" % (tend - tstart))
@@ -96,6 +88,14 @@ def logistic_regression(X, y):
             if alphaFlag >= 10:
                 alpha *= 1.1
                 alphaFlag = 0
+
+        # update theta
+        theta = theta - alpha * grad
+
+        iter += 1
+        if iter >= MAX_ITERATION:
+            print "reach max_iter"
+            break
 
         tend = time.time()
 
@@ -117,7 +117,7 @@ def mapTrainOrder(trainData, ORDER):
 def mapTestOrder(testData, ORDER):
     # 生成 test data
     per_order_size = len(testData[0]) - 1
-    X_t = ones(shape=(len(testData), per_order_size * 2 + 1))    
+    X_t = ones(shape=(len(testData), per_order_size * ORDER + 1))    
 
     for i in range(len(testData)):
         for j in range(ORDER):
@@ -125,6 +125,7 @@ def mapTestOrder(testData, ORDER):
     return X_t
 
 def predict(theta, X_t):
+    print "Shape", X_t.shape, theta.shape
     y_t = X_t.dot(theta)
     return y_t
 
@@ -171,6 +172,10 @@ if __name__ == '__main__':
     #     X_t[i] = rawTestData[i][1:]
 
     X_t = mapTestOrder(rawTestData, ORDER)
+
+    # feature scaling
+    if SCALING:
+        X_t = (X_t - mean(X, axis=0)) / (std(X, axis=0)).clip(min=0.000001)
 
     # predict
     y_t = predict(theta, X_t)
