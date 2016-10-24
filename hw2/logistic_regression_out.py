@@ -46,4 +46,5 @@ if __name__ == '__main__':
     out = open(sys.argv[3], 'w')
     out.write('id,label\n')
     for i in range(len(y_t)):
-    	out.write(str(i+1) + ',' + str(y_t[i]) + '\n')
+        out.write(str(i+1) + ',' + str(y_t[i]) + '\n')
+    out.close()
