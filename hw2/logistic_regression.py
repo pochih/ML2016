@@ -6,11 +6,11 @@ import time
 import cPickle as pickle
 
 ORDER = 1                   # order
-LAMBDA = 10 				# regularization rate
+LAMBDA = 10                 # regularization rate
 SCALING = False             # feature scaling
-ALPHA = 0.001				# learning rate
-MAX_ITERATION = 1000000	    # max iterations
-TIME_MAX = 60*10-3 	        # time max (10 mins)
+ALPHA = 0.001               # learning rate
+MAX_ITERATION = 1000000     # max iterations
+TIME_MAX = 60*10-3          # time max (10 mins)
 
 def sigmoid(X):
 
