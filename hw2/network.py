@@ -1,8 +1,8 @@
-# Standard library
 import random
-
-# Third-party libraries
 import numpy as np
+import time
+
+TIME_MAX = 60*10 - 3
 
 class Network(object):
 
@@ -11,8 +11,7 @@ class Network(object):
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
-        self.weights = [np.random.randn(y, x)
-                        for x, y in zip(sizes[:-1], sizes[1:])]
+        self.weights = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]
         # self.etaFlag = 0    # learning rate flag
         # self.eta = 0        # learning rate
         # self.val = 1        # evaluate
@@ -27,14 +26,14 @@ class Network(object):
             test_data=None):
 
         # self.eta = eta
-        maxWeights = maxBiases = maxVal = 0
+        tstart = time.time()
+        tend = time.time()
+        maxWeights = maxBiases = maxVal = maxIter = 0
         if test_data: n_test = len(test_data)
         n = len(training_data)
         for j in xrange(epochs):
             random.shuffle(training_data)
-            mini_batches = [
-                training_data[k:k+mini_batch_size]
-                for k in xrange(0, n, mini_batch_size)]
+            mini_batches = [training_data[k:k+mini_batch_size] for k in xrange(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
@@ -43,11 +42,15 @@ class Network(object):
                     maxVal = val
                     maxWeights = self.weights
                     maxBiases = self.biases
-                print "Epoch {0}: {1} / {2}".format(
-                    j, val, n_test)
+                    maxIter = j
+                print "Iter {0}: {1} / {2}, MaxVal: {3}, MaxIter: {4}".format(
+                    j, val, n_test, maxVal, maxIter)
             else:
-                print "Epoch {0} complete".format(j)
-        print "Max val: ", maxVal
+                print "Iter {0} complete".format(j)
+            tend = time.time()
+            if (tend - tstart) >= TIME_MAX:
+                break
+        print "Max val: ", maxVal, ", Max accuracy: ", float(maxVal) / n_test
         return maxWeights, maxBiases
 
     def update_mini_batch(self, mini_batch, eta):
@@ -58,10 +61,8 @@ class Network(object):
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w-(eta/len(mini_batch))*nw
-                        for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b-(eta/len(mini_batch))*nb
-                       for b, nb in zip(self.biases, nabla_b)]
+        self.weights = [w-(eta/len(mini_batch))*nw for w, nw in zip(self.weights, nabla_w)]
+        self.biases = [b-(eta/len(mini_batch))*nb for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
 
@@ -109,7 +110,6 @@ class Network(object):
     def cost_derivative(self, output_activations, y):
         return (output_activations-y)
 
-#### Miscellaneous functions
 def sigmoid(z):
     return 1.0/(1.0+np.exp(-z))
 

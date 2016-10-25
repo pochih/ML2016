@@ -7,7 +7,7 @@ import numpy as np
 import random
 
 ORDER = 1
-splitPercent = 15
+splitPercent = 10
 
 def mapTrainOrder(data, ORDER):
 
@@ -58,11 +58,11 @@ if __name__ == '__main__':
     # 依照比例 (splitPercent) 生成 test data
     testData = mapTestOrder(rawTrainData[:len(rawTrainData)*splitPercent/100], ORDER)
 
-    # 建立 neural network
-    net = network.Network([57, 35, 15, 10, 5, 2])
+    ## 建立 neural network
+    net = network.Network([57, 40, 2])
 
     # SGD(train data, iterations, batch-size, learning rate, test data)
-    W, B = net.SGD(trainData, 30000, 10, 0.015, test_data=testData)
+    W, B = net.SGD(trainData, 150000, 10, 0.0015, test_data=testData)
 
     # 儲存 model
     pickle.dump((W, B), open(sys.argv[2], "wb"), True)
