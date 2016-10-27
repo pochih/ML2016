@@ -2,7 +2,7 @@ import random
 import numpy as np
 import time
 
-TIME_MAX = 60*10 - 3
+TIME_MAX = 60*55
 
 class Network(object):
 
