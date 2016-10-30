@@ -17,12 +17,14 @@ import numpy as np
 
 nb_classes = 10
 batch_size = 100
-nb_epoch = 200
+batch_size2 = 1000
+nb_epoch = 0
+nb_epoch2 = 10
 validPercent = 10
-out = open('submit_5', 'w')
+out = open('submit_test', 'w')
 LOAD_FLAG = True
 LOAD_MODEL_FILE = "model_3_2"
-MODEL_FILE = "model_5"
+MODEL_FILE = "model_test"
 
 # slow data
 # # labels[0-9][0-499][0-3071]
@@ -65,7 +67,7 @@ ts = time.time()
 (X_unlabel, Y_unlabel) = pickle.load(open("fast_all_unlabel", "rb"))
 (X_test, Y_test) = pickle.load(open("fast_test", "rb"))
 te = time.time()
-print('Loading data......', te-ts, 'secs')
+print(' === Loading data......', te-ts, 'secs === \n')
 '''(5000, 32, 32, 3) (5000, 10) (10000, 32, 32, 3) (10000, 10) (45000, 32, 32, 3) (45000, 10)'''
 print('shape: X_train', X_train.shape, 'Y_train', Y_train.shape, 'X_test', X_test.shape, 'Y_test', Y_test.shape, 'X_unlabel', X_unlabel.shape, 'Y_unlabel', Y_unlabel.shape)
 
@@ -80,14 +82,14 @@ else:
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
-    
+
     model.add(Convolution2D(64, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(64, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
-    
+
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
@@ -107,32 +109,34 @@ X_test /= 255
 X_validation, Y_validation = ps.parseValidation(X_train, Y_train, nb_classes, len(X_train)*validPercent/100, _type='rgb')
 
 model.fit(X_train, Y_train,
-              batch_size=batch_size,
-              nb_epoch=nb_epoch,
-              validation_data=(X_validation, Y_validation),
-              shuffle=True)
+            batch_size=batch_size,
+            nb_epoch=nb_epoch,
+            validation_data=(X_validation, Y_validation),
+            shuffle=True)
+
+# semi-supervised
+print(" === Predicting unlabeled data...... === \n")
+result = model.predict(X_unlabel)
+Y_unlabel = ps.to_categorical(result, nb_classes)
+X_train = np.concatenate((X_train, X_unlabel), axis=0)
+Y_train = np.concatenate((Y_train, Y_unlabel), axis=0)
+print('X_train.shape', X_train.shape, 'Y_train.shape', Y_train.shape)
+
+X_validation, Y_validation = ps.parseValidation(X_train, Y_train, nb_classes, len(X_train)*validPercent/100, _type='rgb')
+
+model.fit(X_train, Y_train,
+            batch_size=batch_size2,
+            nb_epoch=nb_epoch2,
+            validation_data=(X_validation, Y_validation),
+            shuffle=True)
 
 # save model & predict
-print("Saving model......")
+print(" === Saving model...... === \n")
 model.save(MODEL_FILE)
-print("Predicting test data......")
+print(" === Predicting test data...... === \n")
 result = model.predict(X_test)
 out.write('ID,class\n')
 for i in range(len(result)):
     out.write(str(i) + ',' + str(np.argmax(result[i])) + '\n')
 print('result[9999]', result[9999])
 print('result[9996]', result[9996])
-# pickle.dump(result, open("result", "wb"), True)
-
-# score = model.evaulate(X_test, y_test)
-# print("Testing Loss:", score[0], ", Testing accuracy:", score[1])
-# result = model.predict(X_test)
-# print("Result:", X_test)
-
-# print("labels.len: %d" % (len(labels)))
-# # print("unlabels.len: %d" % (len(unlabels)))
-# print("tests.len: %d" % (len(tests)))
-
-# print 'labels[0].len', len(labels[0])
-# # print 'unlabels', unlabels[0]
-# print tests['ID'][3], len(tests['data'][3]), tests['labels'][3]

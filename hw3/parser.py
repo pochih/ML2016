@@ -2,13 +2,13 @@ import numpy as np
 import random
 
 # [0-9][0-499][0-3071] to (5000, 32, 32, 3), (5000, 10)
-def parseTrain(data, _type='b/w'):
+def parseTrain(data, nb_classes, _type='b/w'):
 	pixels = int(len(data[0][0]) ** 0.5)
 	channels = 1
 	if _type == 'rgb':
 		pixels = int((len(data[0][0]) / 3) ** 0.5)
 		channels = 3
-	classes = len(data)
+	classes = nb_classes
 	data_len = sum([len(x) for x in data])
 	X = np.zeros((data_len, pixels, pixels, channels))
 	Y = np.zeros((data_len, classes))
@@ -26,13 +26,13 @@ def parseTrain(data, _type='b/w'):
 
 	return X, Y
 
-def parseUnlabel(data, _type='b/w'):
+def parseUnlabel(data, nb_classes, _type='b/w'):
 	pixels = int(len(data[0]) ** 0.5)
 	channels = 1
 	if _type == 'rgb':
 		pixels = int((len(data[0]) / 3) ** 0.5)
 		channels = 3
-	classes = 10
+	classes = nb_classes
 	data_len = len(data)
 	X = np.zeros((data_len, pixels, pixels, channels))
 	Y = np.zeros((data_len, classes))
@@ -44,13 +44,13 @@ def parseUnlabel(data, _type='b/w'):
 
 	return X, Y
 
-def parseTest(data, _type='b/w'):
+def parseTest(data, nb_classes, _type='b/w'):
 	pixels = int(len(data['data'][0]) ** 0.5)
 	channels = 1
 	if _type == 'rgb':
 		pixels = int((len(data['data'][0]) / 3) ** 0.5)
 		channels = 3
-	classes = 10
+	classes = nb_classes
 	data_len = len(data['data'])
 	X = np.zeros((data_len, pixels, pixels, channels))
 	Y = np.zeros((data_len, classes))
@@ -62,12 +62,12 @@ def parseTest(data, _type='b/w'):
 
 	return X, Y
 
-def parseValidation(X_train, Y_train, size, _type='b/w'):
+def parseValidation(X_train, Y_train, nb_classes, size, _type='b/w'):
 	pixels = X_train.shape[1]
 	channels = 1
 	if _type == 'rgb':
 		channels = 3
-	classes = 10
+	classes = nb_classes
 	index = range(0, len(X_train))
 	random.shuffle(index)
 	X = np.zeros((size, pixels, pixels, channels))
@@ -76,3 +76,9 @@ def parseValidation(X_train, Y_train, size, _type='b/w'):
 		X[i] = X_train[index[i]]
 		Y[i] = Y_train[index[i]]
 	return X, Y
+
+def to_categorical(result, nb_classes):
+	Y = np.zeros((len(result), nb_classes))
+	for i in range(len(result)):
+		Y[i, np.argmax(result[i])] = 1
+	return Y
