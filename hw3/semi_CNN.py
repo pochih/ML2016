@@ -18,8 +18,8 @@ import numpy as np
 nb_classes = 10
 batch_size = 100
 batch_size2 = 1000
-nb_epoch = 0
-nb_epoch2 = 10
+nb_epoch = 200
+nb_epoch2 = 200
 validPercent = 10
 out = open('submit_test', 'w')
 LOAD_FLAG = True
@@ -81,14 +81,14 @@ else:
     model.add(Convolution2D(32, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
 
     model.add(Convolution2D(64, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(64, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
 
     model.add(Flatten())
     model.add(Dense(512))
