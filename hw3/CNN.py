@@ -1,14 +1,10 @@
 # coding=utf-8
 from __future__ import print_function
-from keras.datasets import cifar10
-from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.models import load_model
-from keras.models import model_from_json
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
-from keras.utils import np_utils
 import cPickle as pickle
 import json
 import time
@@ -74,20 +70,23 @@ model = Sequential()
 if LOAD_FLAG:
     model = load_model(LOAD_MODEL_FILE)
 else:
-    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
+    # group1
+    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=X_train.shape[1:])) # border-mode: zero-padding
     model.add(Activation('relu'))
     model.add(Convolution2D(32, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.5))
-    
+
+    # group2
     model.add(Convolution2D(64, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(64, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.5))
-    
+
+    # group3
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
@@ -106,11 +105,7 @@ X_test /= 255
 
 X_validation, Y_validation = ps.parseValidation(X_train, Y_train, nb_classes, len(X_train)*validPercent/100, _type='rgb')
 
-model.fit(X_train, Y_train,
-              batch_size=batch_size,
-              nb_epoch=nb_epoch,
-              validation_data=(X_validation, Y_validation),
-              shuffle=True)
+model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, validation_data=(X_validation, Y_validation), shuffle=True)
 
 # save model & predict
 print("Saving model......")
@@ -120,8 +115,7 @@ result = model.predict(X_test)
 out.write('ID,class\n')
 for i in range(len(result)):
     out.write(str(i) + ',' + str(np.argmax(result[i])) + '\n')
-print('result[9999]', result[9999])
-print('result[9996]', result[9996])
+
 # pickle.dump(result, open("result", "wb"), True)
 
 # score = model.evaulate(X_test, y_test)
