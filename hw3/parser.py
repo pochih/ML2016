@@ -82,3 +82,34 @@ def to_categorical(result, nb_classes):
 	for i in range(len(result)):
 		Y[i, np.argmax(result[i])] = 1
 	return Y
+
+def countMean(X_train, Y_train, nb_classes):
+	X = np.zeros((nb_classes, X_train.shape[1], X_train.shape[2], X_train.shape[3]))
+	tmp = []
+	for i in range(nb_classes):
+		tmp.append([])
+	for i in range(len(Y_train)):
+		tmp[np.argmax(Y_train[i])].append(X_train[i])
+	for i in range(nb_classes):
+		if len(tmp[i]) > 0:
+			ndarr = np.zeros((len(tmp[i]), X_train.shape[1], X_train.shape[2], X_train.shape[3]))
+		else:
+			print "Warning: class", i, 'is empty'
+			continue
+		for j in range(len(tmp[i])):
+			ndarr[j] = tmp[i][j]
+		X[i] = np.mean(ndarr, axis=0)
+	return X
+
+def reshape(data):
+	shape = data.shape
+	multiply = 1
+	for i in range(1, len(shape)):
+		multiply *= shape[i]
+	return data.reshape(shape[0], multiply)
+
+def raw(Y_train):
+	Y = np.zeros((len(Y_train), 1))
+	for i in range(len(Y_train)):
+		Y[i] = np.argmax(Y_train[i])
+	return Y
