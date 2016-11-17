@@ -14,7 +14,7 @@ import sys
 
 nb_classes = 10
 batch_size = 100
-nb_epoch = 300
+nb_epoch = 350
 validPercent = 15
 LOAD_FLAG = False
 LOAD_MODEL_FILE = "trained_model"
@@ -76,31 +76,31 @@ model = Sequential()
 if LOAD_FLAG:
     model = load_model(LOAD_MODEL_FILE)
 else:
-    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
+    model.add(Convolution2D(32, 4, 4, border_mode='same', input_shape=X_train.shape[1:]))
     model.add(Activation('relu'))
-    model.add(Convolution2D(32, 3, 3))
+    model.add(Convolution2D(32, 4, 4))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.55))
 
     model.add(Convolution2D(64, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(64, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.35))
+    model.add(Dropout(0.55))
 
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.55))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
 
     # start CNN
     sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
     nadam = Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
 print(model.summary())
 

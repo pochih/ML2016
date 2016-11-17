@@ -18,7 +18,7 @@ import sys
 nb_classes = 10
 batch_size = 100
 batch_size2 = 1000
-nb_epoch = 300
+nb_epoch = 350
 nb_epoch2 = 120
 SEMI_TIMES = 5
 validPercent = 10
@@ -81,24 +81,24 @@ model = Sequential()
 if LOAD_FLAG:
     model = load_model(LOAD_MODEL_FILE)
 else:
-    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
+    model.add(Convolution2D(32, 4, 4, border_mode='same', input_shape=X_train.shape[1:]))
     model.add(Activation('relu'))
-    model.add(Convolution2D(32, 3, 3))
+    model.add(Convolution2D(32, 4, 4))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.55))
 
     model.add(Convolution2D(64, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(64, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.55))
 
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.55))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
 
