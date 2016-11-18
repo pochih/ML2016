@@ -20,14 +20,14 @@ CLUSTER = 'knn'
 
 nb_classes = 10
 noise_factor = 0.2
-nb_epoch = 200
+nb_epoch = 300
 nb_epoch2 = 150
 batch_size = 128
 batch_size2 = 1280
 validPercent = 10
 SEMI_TIMES = 3
 
-LOAD_FLAG = False
+LOAD_FLAG = True
 LOAD_MODEL_FILE = "trained_model"
 encoder_model = 'encoder_model'
 autoencoder_model = 'autoencoder_model'
@@ -112,21 +112,19 @@ if noise_factor >= 0:
                 nb_epoch=nb_epoch,
                 batch_size=batch_size,
                 shuffle=True,
-                validation_data=(X_test_noisy, X_test), 
-                callbacks=[earlystopping])
+                validation_data=(X_test_noisy, X_test))
 else:
     autoencoder.fit(X_train_prime, X_train_prime,
                 nb_epoch=nb_epoch,
                 batch_size=batch_size,
                 shuffle=True,
-                validation_data=(X_test, X_test), 
-                callbacks=[earlystopping])
+                validation_data=(X_test, X_test))
 
 encoder.save(encoder_model)
 autoencoder.save(autoencoder_model)
 
 labeled_encoded_imgs = encoder.predict(X_train)
-encoded_imgs = encoder.predict(X_unlabel)
+encoded_imgs = encoder.predict(X_train_prime)
 decoded_imgs = autoencoder.predict(X_test)
 
 if CLUSTER == 'kmeans':
@@ -151,21 +149,6 @@ elif CLUSTER == 'knn':
     print 'X_train_r.shape', X_train_r.shape, 'Y_train_r.shape', Y_train_r.shape
     knn.fit(X_train_r, Y_train_r)
     joblib.dump(knn, 'knn.pkl')
-
-# predict
-unlabeled_imgs = encoder.predict(X_unlabel)
-print "unlabeled_imgs.shape", unlabeled_imgs.shape
-unlabeled_imgs_r = ps.reshape(unlabeled_imgs)
-print "unlabeled_imgs_r.shape", unlabeled_imgs_r.shape
-if CLUSTER == 'kmeans':
-    predict = kmeans.predict(unlabeled_imgs_r)
-elif CLUSTER == 'knn':
-    predict = knn.predict(unlabeled_imgs_r)
-print predict
-print 'Y_unlabel[10], predict[10]', Y_unlabel[10], predict[10]
-for i in range(len(predict)):
-    Y_unlabel[i, predict[i]] = 1
-print 'Y_unlabel[10], predict[10]', Y_unlabel[10], predict[10]
 
 # add model
 model = Sequential()
@@ -196,22 +179,54 @@ else:
     sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
+# predict
+unlabeled_imgs = encoder.predict(X_unlabel)
+print "unlabeled_imgs.shape", unlabeled_imgs.shape
+unlabeled_imgs_r = ps.reshape(unlabeled_imgs)
+print "unlabeled_imgs_r.shape", unlabeled_imgs_r.shape
+test_imgs = encoder.predict(X_test)
+print "test_imgs.shape", test_imgs.shape
+test_imgs_r = ps.reshape(test_imgs)
+print "test_imgs_r.shape", test_imgs_r.shape
+X_train_auto_prime = np.concatenate((unlabeled_imgs_r, test_imgs_r), axis=0)
+Y_train_auto_prime = np.concatenate((Y_unlabel, Y_test), axis=0)
+if CLUSTER == 'kmeans':
+    predict = kmeans.predict(X_train_auto_prime)
+elif CLUSTER == 'knn':
+    predict = knn.predict_proba(X_train_auto_prime)
+print predict
+print 'Y_train_auto_prime[10], predict[10]', Y_train_auto_prime[10], predict[10]
+X_train_auto_prime = np.concatenate((X_unlabel, X_test),axis=0)
+if CLUSTER == 'kmeans':
+    for i in range(len(predict)):
+        Y_train_auto_prime[i, int(predict[i])] = 1
+elif CLUSTER == 'knn':
+    (X_train_auto_prime, Y_train_auto_prime) = ps.parseAuto(X_train_auto_prime, Y_train_auto_prime, predict, threshold=0.8)
+print 'Y_train_auto_prime[10], predict[10]', Y_train_auto_prime[10], predict[10]
+
 # start semi-supervised
-X_train_auto = np.concatenate((X_train, X_unlabel), axis=0)
-earlystopping = EarlyStopping(monitor='val_loss', patience=15, verbose=1)
+X_train_auto = np.concatenate((X_train, X_train_auto_prime), axis=0)
+Y_train_auto = np.concatenate((Y_train, Y_train_auto_prime), axis=0)
 
 for i in range(SEMI_TIMES):
     print("semi iter", i)
 
-    Y_train_auto = np.concatenate((Y_train, Y_unlabel), axis=0)
     X_validation, Y_validation = ps.parseValidation(X_train_auto, Y_train_auto, nb_classes, len(X_train_auto)*validPercent/100, _type='rgb')
-    model.fit(X_train_auto, Y_train_auto, batch_size=batch_size2, nb_epoch=nb_epoch2, validation_data=(X_validation, Y_validation), shuffle=True, callback=[earlystopping])
+    model.fit(X_train_auto, Y_train_auto, batch_size=batch_size2, nb_epoch=nb_epoch2, validation_data=(X_validation, Y_validation), shuffle=True)
 
     print(" === Predicting unlabeled data...... === \n")
     Y_unlabel = model.predict(X_unlabel)
+    Y_test = model.predict(X_test)
     print('Y_unlabel[1000]',Y_unlabel[1000])
     Y_unlabel = ps.to_categorical(Y_unlabel, nb_classes)
+    Y_test = ps.to_categorical(Y_test, nb_classes)
     print('after ps Y_unlabel[1000]',Y_unlabel[1000])
+    X_train_auto = np.concatenate((X_train, X_unlabel), axis=0)
+    X_train_auto = np.concatenate((X_train_auto, X_test), axis=0)
+    Y_train_auto = np.concatenate((Y_train, Y_unlabel), axis=0)
+    Y_train_auto = np.concatenate((Y_train_auto, Y_test), axis=0)
+    print(" === Saving model...... === \n")
+    model.save(MODEL_FILE)
 
 # save model
 print(" === Saving model...... === \n")
