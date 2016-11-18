@@ -1,1 +1,1 @@
-python2.7 CNN_out.py $1 $2 $3
+KERAS_BACKEND=tensorflow python2.7 CNN_out.py $1 $2 $3
