@@ -77,6 +77,43 @@ def parseValidation(X_train, Y_train, nb_classes, size, _type='b/w'):
 		Y[i] = Y_train[index[i]]
 	return X, Y
 
+def parseSemi(X_train_semi_prime, Y_train_semi_prime, threshold=0.8, classes=10):
+	X_beyond = []
+	Y_beyond = []
+	print 'Y_train_semi_prime[5]', Y_train_semi_prime[5], np.amax(Y_train_semi_prime[5])
+	print 'Y_train_semi_prime[15]', Y_train_semi_prime[15], np.amax(Y_train_semi_prime[15])
+	for i in range(len(Y_train_semi_prime)):
+		max_val = np.amax(Y_train_semi_prime[i])
+		if max_val >= threshold:
+			X_beyond.append(X_train_semi_prime[i])
+			Y_beyond.append(Y_train_semi_prime[i])
+	X_semi = np.zeros((len(X_beyond), X_train_semi_prime.shape[1], X_train_semi_prime.shape[2], X_train_semi_prime.shape[3]))
+	Y_semi = np.zeros((len(Y_beyond), classes))
+	for i in range(len(X_beyond)):
+		X_semi[i] = X_beyond[i]
+		Y_semi[i] = Y_beyond[i]
+	return (X_semi, Y_semi)
+
+def parseAuto(X_train_auto_prime, Y_train_auto_prime, predict, threshold=0.8, classes=10):
+	X_beyond = []
+	Y_beyond = []
+	print 'predict[5]', predict[5], np.amax(predict[5])
+	print 'predict[15]', predict[15], np.amax(predict[15])
+	for i in range(len(predict)):
+		max_val = np.amax(predict[i])
+		if max_val >= threshold:
+			X_beyond.append(X_train_auto_prime[i])
+			print i, predict[i]
+			Y_train_auto_prime[i, np.argmax(predict[i])] = 1
+			print Y_train_auto_prime[i]
+			Y_beyond.append(Y_train_auto_prime[i])
+	X_auto = np.zeros((len(X_beyond), X_train_auto_prime.shape[1], X_train_auto_prime.shape[2], X_train_auto_prime.shape[3]))
+	Y_auto = np.zeros((len(Y_beyond), classes))
+	for i in range(len(X_beyond)):
+		X_auto[i] = X_beyond[i]
+		Y_auto[i] = Y_beyond[i]
+	return (X_auto, Y_auto)
+
 def to_categorical(result, nb_classes):
 	Y = np.zeros((len(result), nb_classes))
 	for i in range(len(result)):

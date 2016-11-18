@@ -20,10 +20,10 @@ batch_size = 100
 batch_size2 = 1000
 nb_epoch = 350
 nb_epoch2 = 120
-SEMI_TIMES = 5
+SEMI_TIMES = 3
 validPercent = 10
 
-LOAD_FLAG = False
+LOAD_FLAG = True
 LOAD_MODEL_FILE = "trained_model"
 MODEL_FILE = sys.argv[2]
 dataPath = sys.argv[1]
@@ -111,18 +111,25 @@ else:
     model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, validation_data=(X_validation, Y_validation), shuffle=True)
 
 # semi-supervised
-X_train_semi = np.concatenate((X_train, X_unlabel), axis=0)
+X_train_semi_prime = np.concatenate((X_unlabel, X_test), axis=0)
+Y_train_semi_prime = np.concatenate((Y_unlabel, Y_test), axis=0)
 earlystopping = EarlyStopping(monitor='val_loss', patience=15, verbose=1)
 for i in range(SEMI_TIMES):
     print("semi iter", i)
 
     print(" === Predicting unlabeled data...... === \n")
-    Y_unlabel = model.predict(X_unlabel)
-    print('Y_unlabel[1000]',Y_unlabel[1000])
-    Y_unlabel = ps.to_categorical(Y_unlabel, nb_classes)
-    print('after ps Y_unlabel[1000]',Y_unlabel[1000])
-    Y_train_semi = np.concatenate((Y_train, Y_unlabel), axis=0)
-    print('X_train_semi.shape', X_train_semi.shape, 'Y_train_semi.shape', Y_train_semi.shape) 
+    Y_train_semi_prime = model.predict(X_train_semi_prime)
+
+    print(" === Parsing unlabeled data...... === \n")
+    X_train_semi, Y_train_semi = ps.parseSemi(X_train_semi_prime, Y_train_semi_prime, threshold=0.8)
+    X_train_semi = np.concatenate((X_train, X_train_semi), axis=0)
+    Y_train_semi = np.concatenate((Y_train, Y_train_semi), axis=0)
+    print('Y_train_semi[10000]', Y_train_semi[10000])
+    Y_train_semi = ps.to_categorical(Y_train_semi, nb_classes)
+    print('after ps Y_train_semi[10000]', Y_train_semi[10000])
+    print('X_train_semi.shape', X_train_semi.shape, 'Y_train_semi.shape', Y_train_semi.shape)
+
+    print(" === Training with unlabeled data...... === \n")
     X_validation_semi, Y_validation_semi = ps.parseValidation(X_train_semi, Y_train_semi, nb_classes, len(X_train_semi)*validPercent/100, _type='rgb')
     model.fit(X_train_semi, Y_train_semi, batch_size=batch_size2, nb_epoch=nb_epoch2, validation_data=(X_validation_semi, Y_validation_semi), shuffle=True)
     print(" === Saving model...... === \n")
