@@ -7,6 +7,9 @@ from keras.models import Model
 from keras.optimizers import SGD
 from keras.utils import np_utils
 from keras.callbacks import EarlyStopping
+from sklearn.cluster import KMeans
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.externals import joblib
 import numpy as np
 import parser as ps
 import time
@@ -16,7 +19,7 @@ import sys
 CLUSTER = 'knn'
 
 nb_classes = 10
-noise_factor = 0.23
+noise_factor = 0.2
 nb_epoch = 200
 nb_epoch2 = 150
 batch_size = 128
@@ -76,6 +79,7 @@ X_train = X_train.astype('float32') / 255.
 X_unlabel = X_unlabel.astype('float32') / 255.
 X_test = X_test.astype('float32') / 255.
 X_train_prime = np.concatenate((X_train, X_unlabel), axis=0)
+X_train_prime = np.concatenate((X_train_prime, X_test), axis=0)
 # X_train = np.reshape(X_train, (len(X_train), 32, 32, 3))
 # X_test = np.reshape(X_test, (len(X_test), 32, 32, 3))
 
