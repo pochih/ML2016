@@ -6,7 +6,7 @@ import counter as ct
 import cPickle as pickle
 from math import log
 
-THRESHOLD = -30
+THRESHOLD = -26
 SMOOTHING = 0.00027
 
 def load_file():
@@ -26,6 +26,12 @@ def load_file():
 
     return title, check, docs
 
+def load_stopwords():
+    if sys.argv[1][-1] != '/':
+        sys.argv[1] += '/'
+    sw = open(sys.argv[1] + 'stopword.txt', 'r').read().split('\n')
+    return sw
+
 def main(threshold=THRESHOLD) :
     # load_data
     title, check, docs = load_file()
@@ -33,6 +39,7 @@ def main(threshold=THRESHOLD) :
     ## parse titles to documents
     for i in range(len(title_docs)):
         title_docs[i] = ps.removeUselessContent(title_docs[i])
+    stopwords = load_stopwords()
 
     # count tf & idf of corpus
     tmpTitle = ps.removeUselessContent(title)
@@ -47,7 +54,7 @@ def main(threshold=THRESHOLD) :
     print title_models[0]['tf']['a'],title_models[0]['length']
 
     pickle.dump((Terms, Model), open("model/terms_ver_NB.pkl", "wb"), True)
-    pickle.dump(title_models, open("model/title_models.pkl", "wb"), True)
+    pickle.dump(title_models, open("model/title_models_ver_NB.pkl", "wb"), True)
 
     # test documents pairs
     out = open(sys.argv[2], 'w')
@@ -60,8 +67,9 @@ def main(threshold=THRESHOLD) :
     for i in range(len(check)):
         doc1 = check[i][0]
         doc2 = check[i][1]
-        prob = ct.countProbability(title_docs[doc1], title_models[doc2], Terms, smooth=SMOOTHING)
-        print i, prob
+        prob = ct.countProbability(title_docs[doc1], title_models[doc2], Terms, smooth=SMOOTHING, stopword=stopwords)
+        if i % 50000 == 0:
+            print 'producing index', i, 'prob:', prob
         if prob < Min:
             Min = prob
             MinPos = i
