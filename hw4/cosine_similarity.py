@@ -5,7 +5,6 @@ import parser as ps
 import counter as ct
 import cPickle as pickle
 from math import log
-from gensim.models import word2vec
 
 THRESHOLD = 0.08
 VERSION = 'sklearn'
@@ -27,9 +26,16 @@ def load_file():
 
     return title, check, docs
 
+def load_stopwords():
+    if sys.argv[1][-1] != '/':
+        sys.argv[1] += '/'
+    sw = open(sys.argv[1] + 'stopword.txt', 'r').read().split('\n')
+    return sw
+
 def main(threshold=THRESHOLD) :
     ## load_data ##
     title, check, docs = load_file()
+    stopwords = load_stopwords()
 
 
     ## parse data ##
@@ -40,6 +46,7 @@ def main(threshold=THRESHOLD) :
 
     if VERSION == 'sklearn':
         for i in range(len(title_docs)):
+            title_docs[i] = ps.removeStopwords(title_docs[i], stopwords)
             title_docs[i] = " ".join(title_docs[i])
     else:
         # count tf & idf of corpus
@@ -52,10 +59,11 @@ def main(threshold=THRESHOLD) :
         title_models = []
         for i in range(len(title_docs)):
             terms, model = ps.generalModel(title_docs[i])
+            terms = ps.removeStopwords(terms, stopwords)
             model = ps.parseTFIDF(terms, model, Model)
             title_models.append({'terms':terms, 'tfidf':model['tfidf']})
         # print title_models[0]['tf']['a'],title_models[0]['length']
-        pickle.dump(title_models, open("model/title_models.pkl", "wb"), True)
+        pickle.dump(title_models, open("model/title_models_ver_cosine.pkl", "wb"), True)
 
 
     # test documents pairs
@@ -73,7 +81,8 @@ def main(threshold=THRESHOLD) :
             doc1 = check[i][0]
             doc2 = check[i][1]
             cosineSimilarity = cosineMatrix[doc1][doc2]
-            print i, cosineSimilarity
+            if i % 50000 == 0:
+                print 'producing index', i, 'cosineSimilarity:', cosineSimilarity
             if cosineSimilarity < Min:
                 Min = cosineSimilarity
                 MinPos = i
@@ -92,7 +101,8 @@ def main(threshold=THRESHOLD) :
             doc1 = check[i][0]
             doc2 = check[i][1]
             cosineSimilarity = ct.docCosineSimilarity(title_models[doc1], title_models[doc2], title_docs[doc1], title_docs[doc2])
-            print i, cosineSimilarity
+            if i % 50000 == 0:
+                print 'producing index', i, 'cosineSimilarity:', cosineSimilarity
             if cosineSimilarity < Min:
                 Min = cosineSimilarity
                 MinPos = i
