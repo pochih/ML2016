@@ -1,5 +1,6 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+# from nltk.corpus import stopwords
 from scipy import sparse
 from scipy import spatial
 from math import log, sqrt
@@ -17,11 +18,13 @@ def wordProbability(word, model, Terms):
     # print word, float(SMOOTHING+wordInModel), "/", float(SMOOTHING*len(Terms)+modelLength), float(SMOOTHING+wordInModel) / float(SMOOTHING*len(Terms)+modelLength)
     return float(SMOOTHING+wordInModel) / float(SMOOTHING*len(Terms)+modelLength)
 
-def countProbability(doc, model, Terms, smooth=None):
-    if smooth != None:
+def countProbability(doc, model, Terms, smooth=0.00027, stopword=None):
+    if smooth == None:
         SMOOTHING = smooth
     probability_pi = 0
     for word in doc:
+        if word in stopword:
+            continue
         probability_pi += log(wordProbability(word, model, Terms))
     return probability_pi
 

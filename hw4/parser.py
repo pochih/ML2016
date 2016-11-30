@@ -3,7 +3,7 @@ import time
 from math import log
 
 def removeUselessContent(content):
-    
+
     ret = []  # return list
     content = content.split()
 
@@ -21,7 +21,7 @@ def generalModel(content, documents=None):
 
     Terms = []
     Model = {'tf':{}}
-    print "parse TF & terms..."
+    # print("parse TF & terms...")
     ts = time.time()
     for i in range(len(content)):
         term = content[i]
@@ -35,10 +35,10 @@ def generalModel(content, documents=None):
     for key in Model['tf']:
         Model['tf'][key] /= float(len(content))
     te = time.time()
-    print te-ts, "secs"
+    # print(te-ts, "secs")
 
     if documents != None:
-        print "parse IDF..."
+        # print("parse IDF...")
         ts = time.time()
         Model['idf'] = {}
         for i in range(len(Terms)):
@@ -52,7 +52,7 @@ def generalModel(content, documents=None):
             else:
                 Model['idf'][Terms[i]] = 1
         te = time.time()
-        print te-ts, "secs"
+        # print(te-ts, "secs")
 
     return Terms, Model
 
@@ -64,3 +64,10 @@ def parseTFIDF(terms, model, Model):
             idf = Model['idf'][term]
             model['tfidf'][term] = tf * idf
     return model
+
+def removeStopwords(word_list, stopwords):
+    ret = []
+    for word in word_list:
+        if word not in stopwords:
+            ret.append(word)
+    return ret
