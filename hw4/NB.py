@@ -6,7 +6,7 @@ import counter as ct
 import cPickle as pickle
 from math import log
 
-THRESHOLD = -26
+THRESHOLD = -26.3
 SMOOTHING = 0.00027
 
 def load_file():
