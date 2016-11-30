@@ -27,9 +27,7 @@ def load_file():
     return title, check, docs
 
 def load_stopwords():
-    if sys.argv[1][-1] != '/':
-        sys.argv[1] += '/'
-    sw = open(sys.argv[1] + 'stopword.txt', 'r').read().split('\n')
+    sw = open('./stopword.txt', 'r').read().split('\n')
     return sw
 
 def main(threshold=THRESHOLD) :
