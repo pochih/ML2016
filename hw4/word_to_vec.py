@@ -11,7 +11,7 @@ from math import log
 from gensim.models import word2vec
 
 SIMILARITY = 'Cosine'
-THRESHOLD = 0.864
+THRESHOLD = 0.865
 # SIMILARITY = 'WMD'
 # THRESHOLD = 3.95
 VEC_SIZE = 200
